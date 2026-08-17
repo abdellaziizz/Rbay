@@ -6,3 +6,4 @@ export const sessionKey = (sessionId: string) => `sesssion#${sessionId}`;
 export const itemKey = (itemId: string) => `item#${itemId}`;
 export const usernamesUniqueKey = () => `usernames#unique`;
 export const userLikesKey = (userId: string) => `users:likes#${userId}`;
+export const usernamesKey = () => `username:`;
