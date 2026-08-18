@@ -2,8 +2,10 @@ import type { CreateItemAttrs } from '$services/types';
 import { serialize } from '$services/queries/items/serialize';
 import { client } from '$services/redis';
 import { genId } from '$services/utils';
-import { itemKey } from '$services/keys';
+import { itemKey, itemByViewKey, itemByEndingatkey } from '$services/keys';
 import { deserialize } from './deserialize';
+import { promises } from 'dns';
+import { attr } from 'svelte/internal';
 export const getItem = async (id: string) => {
 	const item = await client.hGetAll(itemKey(id));
 	if (Object.keys(item).length === 0) return;
@@ -24,5 +26,9 @@ export const getItems = async (ids: string[]) => {
 export const createItem = async (attrs: CreateItemAttrs) => {
 	const id = genId();
 	const serialized = serialize(attrs);
-	await client.hSet(itemKey(id), serialized);
+	await Promise.all([
+		client.hSet(itemKey(id), serialized),
+		client.zAdd(itemByViewKey(), { value: id, score: 0 }),
+		client.zAdd(itemByEndingatkey(), { value: id, score: attrs.endingAt.toMillis() })
+	]);
 };
