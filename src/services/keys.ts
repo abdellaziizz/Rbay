@@ -11,3 +11,4 @@ export const usernamesKey = () => `username:`;
 export const itemKey = (itemId: string) => `items#${itemId}`;
 export const itemByViewKey = () => `items:views`;
 export const itemByEndingatkey = () => 'items:endingAt';
+export const bidHistoryKey = (itemid: string) => `history${itemid}`;
