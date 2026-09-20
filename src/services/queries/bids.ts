@@ -4,7 +4,7 @@ import { bidHistoryKey } from '$services/keys';
 import { DateTime } from 'luxon';
 import { deserialize } from './items';
 import { getItem } from './items';
-import { itemKey } from '$services/keys';
+import { itemKey, itemByPriceKey } from '$services/keys';
 export const createBid = async (attrs: CreateBidAttrs) => {
 	return client.executeIsolated(async (isolatedClient) => {
 		isolatedClient.watch(itemKey(attrs.itemId));
@@ -28,6 +28,7 @@ export const createBid = async (attrs: CreateBidAttrs) => {
 				price: attrs.amount,
 				highestBidUserId: attrs.userId
 			})
+			.zAdd(itemByPriceKey(), { value: item.id, score: attrs.amount })
 			.exec();
 	});
 };
