@@ -12,17 +12,20 @@ export const withLock = async (key: string, cb: () => any) => {
 	while (retries >= 0) {
 		retries--;
 		//Try the SETNX operation with the random value
-		const acquired = await client.set(lockKey, token, { NX: true });
+		const acquired = await client.set(lockKey, token, { NX: true, PX: 2000 });
 		if (!acquired) {
 			//Pause and retry again
 			await pause(retryDelayms);
 			continue;
 		}
 		//successfully add the random value to the lock key
-		const result = await cb();
+		try {
+			const result = await cb();
+			return result;
+		} finally {
+			await client.del(lockKey);
+		}
 		//unset the value from lock key
-		await client.del(lockKey);
-		return result;
 	}
 };
 
