@@ -7,7 +7,7 @@ import { getItem } from './items';
 import { itemKey, itemByPriceKey } from '$services/keys';
 import { promises } from 'dns';
 export const createBid = async (attrs: CreateBidAttrs) => {
-	return withLock(attrs.itemId, async () => {
+	return withLock(attrs.itemId, async (signals: any) => {
 		const item = await getItem(attrs.itemId);
 		if (!item) {
 			throw new Error('Item is not found');
@@ -20,7 +20,9 @@ export const createBid = async (attrs: CreateBidAttrs) => {
 		}
 
 		const serialized = serializeHistory(attrs.amount, attrs.createdAt.toMillis());
-
+		if (signals.expired) {
+			throw new Error(`Lock is expired . can't write more data`);
+		}
 		return Promise.all([
 			client.rPush(bidHistoryKey(attrs.itemId), serialized),
 			client.hSet(itemKey(item.id), {
